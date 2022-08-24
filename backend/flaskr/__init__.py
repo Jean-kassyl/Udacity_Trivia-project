@@ -9,14 +9,14 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
-def paginate_questions(request, question):
+def paginate_questions(request, question):  # a function to paginate questions as I would need it at many places
     page = request.args.get("page", 1, type=int)
     start = (page - 1) * QUESTIONS_PER_PAGE
     end = start + QUESTIONS_PER_PAGE
     return question[start:end]
 
 
-def define_current_category(query):
+def define_current_category(query):  # a function to define the current_category
     current_category = {}
     if len(query) == 0:
             abort(404)
@@ -31,7 +31,7 @@ def define_current_category(query):
         
     return current_category
 
-def define_categories():
+def define_categories():          #a function to define the categories involved
         q = Category.query.all()
         categories = {}
         for cat in q:
@@ -237,7 +237,8 @@ def create_app(test_config=None):
             "success": True,
             "questions": paginated_questions,
             "total_questions": len(Question.query.all()),
-            "current_category": define_current_category(paginated_questions)
+            "current_category": define_current_category(paginated_questions),
+            "categories": define_categories()
         })
 
 
