@@ -55,7 +55,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data["error"], 404)
 
     def test_get_paginated_questions_list(self):
-        res = self.client().get('/trivia/questions')
+        res = self.client().get('/trivia/questions?page=1')
         data = json.loads(res.data)
 
         q = Question.query.all()
