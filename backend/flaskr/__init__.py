@@ -9,18 +9,21 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
-def paginate_questions(request, question):  # a function to paginate questions as I would need it at many places
+
+# a function to paginate questions as I would need it at many places
+def paginate_questions(request, question):
     page = request.args.get("page", 1, type=int)
     start = (page - 1) * QUESTIONS_PER_PAGE
     end = start + QUESTIONS_PER_PAGE
     return question[start:end]
 
 
-def define_current_category(query):  # a function to define the current_category
+# a function to define the current_category
+def define_current_category(query):
     current_categories = []
     current_category = ""
     if len(query) == 0:
-            abort(404)
+        abort(404)
 
     else:
         for quest in query:
@@ -32,20 +35,20 @@ def define_current_category(query):  # a function to define the current_category
     current_category = current_categories[0]
     return current_category
 
-def define_categories():          #a function to define the categories involved
-        q = Category.query.all()
-        categories = {}
-        for cat in q:
-            categories[cat.id] = cat.type
 
-        return categories
+def define_categories():  # a function to define the categories involved
+    q = Category.query.all()
+    categories = {}
+    for cat in q:
+        categories[cat.id] = cat.type
+
+    return categories
 
 
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
     setup_db(app)
-    
 
     """
     @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
@@ -56,17 +59,20 @@ def create_app(test_config=None):
     """
     @app.after_request
     def after_request(response):
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorize, true')
-        response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS' )
+        response.headers.add(
+            'Access-Control-Allow-Headers',
+            'Content-Type, Authorize, true')
+        response.headers.add(
+            'Access-Control-Allow-Methods',
+            'GET, POST, PATCH, DELETE, OPTIONS')
         return response
-        
+
     """
     @TODO:
     Create an endpoint to handle GET requests
     for all available categories.
     """
 
-   
     @app.route('/trivia/categories')
     def get_categories():
         # categories = Category.query.order_by(Category.id).all()
@@ -77,12 +83,6 @@ def create_app(test_config=None):
             "categories": define_categories(),
             "all_categories": len(Category.query.all())
         })
-
-
-
-
-        
-
 
     """
     @TODO:
@@ -99,7 +99,7 @@ def create_app(test_config=None):
     @app.route('/trivia/questions')
     def get_questions():
         bod = {}
-       
+
         questions = Question.query.order_by(Question.id).all()
         #current_category = []
         formatted_questions = [question.format() for question in questions]
@@ -115,18 +115,14 @@ def create_app(test_config=None):
         #                 current_category.append(cat.type)
 
         #     categories = set(current_category)
-        
-            
+
         bod["success"] = True
         bod['questions'] = paginated_questions
         bod['total_questions'] = len(Question.query.all())
         bod['current_category'] = define_current_category(paginated_questions)
         bod['categories'] = define_categories()
-       
-        
 
         return jsonify(bod)
-
 
     """
     @TODO:
@@ -139,7 +135,8 @@ def create_app(test_config=None):
     @app.route('/trivia/questions/<int:question_id>', methods=['DELETE'])
     def delete_question(question_id):
         print(question_id)
-        question = Question.query.filter(Question.id == question_id).one_or_none()
+        question = Question.query.filter(
+            Question.id == question_id).one_or_none()
         if question is not None:
             question.delete()
         else:
@@ -170,10 +167,15 @@ def create_app(test_config=None):
         new_answer = body.get('answer', None)
         new_difficulty = body.get('difficulty', None)
         new_category = body.get('category', None)
-        item = Question(question=new_question, answer=new_answer,difficulty=new_difficulty, category=new_category)
-        if (item.question == None) and (item.answer == None) and (item.category == None) and (item.difficulty == None):
+        item = Question(
+            question=new_question,
+            answer=new_answer,
+            difficulty=new_difficulty,
+            category=new_category)
+        if (item.question is None) and (item.answer is None) and (
+                item.category is None) and (item.difficulty is None):
             abort(422)
-        else: 
+        else:
             item.insert()
             id = item.id
 
@@ -183,9 +185,7 @@ def create_app(test_config=None):
             "total_questions": len(Question.query.all())
 
         })
-        
-        
-        
+
     """
     @TODO:
     Create a POST endpoint to get questions based on a search term.
@@ -209,16 +209,15 @@ def create_app(test_config=None):
             })
         q = Question.query.filter(Question.question.ilike(f'%{search}%'))
         formated_questions = [question.format() for question in q]
-        paginated_questions= paginate_questions(request, formated_questions)
+        paginated_questions = paginate_questions(request, formated_questions)
 
         return jsonify({
-                "success": True,
-                "questions": paginated_questions,
-                "total_questions": len(Question.query.all()),
-                "current_category": define_current_category(paginated_questions)
-            })
-         
-        
+            "success": True,
+            "questions": paginated_questions,
+            "total_questions": len(Question.query.all()),
+            "current_category": define_current_category(paginated_questions)
+        })
+
     """
     @TODO:
     Create a GET endpoint to get questions based on category.
@@ -228,7 +227,8 @@ def create_app(test_config=None):
     category to be shown.
     """
 
-    @app.route('/trivia/categories/<int:category_id>/questions', methods=["GET"])
+    @app.route('/trivia/categories/<int:category_id>/questions',
+               methods=["GET"])
     def get_questions_basedOn_category(category_id):
         q = Question.query.filter(Question.category == str(category_id)).all()
         formated_questions = [question.format() for question in q]
@@ -241,7 +241,6 @@ def create_app(test_config=None):
             "current_category": define_current_category(paginated_questions),
             "categories": define_categories()
         })
-
 
     """
     @TODO:
@@ -261,7 +260,6 @@ def create_app(test_config=None):
         quiz_category = body.get('quiz_category')
 
         print(previous_questions)
-        
 
         random_question = ""
         formated_rand_question = ""
@@ -272,7 +270,7 @@ def create_app(test_config=None):
             for quest in q:
                 if quest.id not in previous_questions:
                     questions.append(quest)
-   
+
             if len(questions) > 0:
                 randNumber = random.randrange(0, len(questions))
                 random_question = questions[randNumber]
@@ -280,15 +278,15 @@ def create_app(test_config=None):
             else:
                 formated_rand_question = ""
 
-            
-            
         else:
-            q = Question.query.filter(Question.category == str(quiz_category['id'])).all()
+            q = Question.query.filter(
+                Question.category == str(
+                    quiz_category['id'])).all()
             questions = []
             for quest in q:
                 if quest.id not in previous_questions:
                     questions.append(quest)
-  
+
             if len(questions) > 0:
                 randNumber = random.randrange(0, len(questions))
                 random_question = questions[randNumber]
@@ -296,23 +294,19 @@ def create_app(test_config=None):
             else:
                 formated_rand_question = ""
 
-        
-
         print(formated_rand_question)
-            
 
         return jsonify({
             "success": True,
-            "question": formated_rand_question  
+            "question": formated_rand_question
         })
-
 
     """
     @TODO:
     Create error handlers for all expected errors
     including 404 and 422.
     """
-    
+
     @app.errorhandler(404)
     def not_found(error):
         print(error)
@@ -335,8 +329,7 @@ def create_app(test_config=None):
         return jsonify({
             "success": False,
             "error": 400,
-            "message": "Bad request"     
+            "message": "Bad request"
         })
-    
-    return app
 
+    return app
