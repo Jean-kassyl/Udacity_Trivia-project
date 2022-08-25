@@ -17,7 +17,8 @@ def paginate_questions(request, question):  # a function to paginate questions a
 
 
 def define_current_category(query):  # a function to define the current_category
-    current_category = {}
+    current_categories = []
+    current_category = ""
     if len(query) == 0:
             abort(404)
 
@@ -26,9 +27,9 @@ def define_current_category(query):  # a function to define the current_category
             q = Category.query.all()
             for cat in q:
                 if quest['category'] == cat.id:
-                    current_category[cat.id] = cat.type
+                    current_categories.append(cat.type)
 
-        
+    current_category = current_categories[0]
     return current_category
 
 def define_categories():          #a function to define the categories involved
@@ -263,6 +264,7 @@ def create_app(test_config=None):
         
 
         random_question = ""
+        formated_rand_question = ""
 
         if quiz_category is None or (quiz_category['id'] == 0):
             q = Question.query.all()
@@ -271,8 +273,14 @@ def create_app(test_config=None):
                 if quest.id not in previous_questions:
                     questions.append(quest)
    
-            randNumber = random.randrange(0, len(questions))
-            random_question = questions[randNumber]
+            if len(questions) > 0:
+                randNumber = random.randrange(0, len(questions))
+                random_question = questions[randNumber]
+                formated_rand_question = random_question.format()
+            else:
+                formated_rand_question = ""
+
+            
             
         else:
             q = Question.query.filter(Question.category == str(quiz_category['id'])).all()
@@ -281,13 +289,21 @@ def create_app(test_config=None):
                 if quest.id not in previous_questions:
                     questions.append(quest)
   
-            randNumber = random.randrange(0, len(questions))
-            random_question = questions[randNumber]
+            if len(questions) > 0:
+                randNumber = random.randrange(0, len(questions))
+                random_question = questions[randNumber]
+                formated_rand_question = random_question.format()
+            else:
+                formated_rand_question = ""
+
+        
+
+        print(formated_rand_question)
             
 
         return jsonify({
             "success": True,
-            "question": random_question.format()    
+            "question": formated_rand_question  
         })
 
 
